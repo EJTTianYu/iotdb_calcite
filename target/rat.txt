@@ -1,0 +1,421 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2019-04-22T21:25:58+08:00
+
+Notes: 0
+Binaries: 1
+Archives: 0
+Standards: 9
+
+Apache Licensed: 0
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+9 Unknown Licenses
+
+*****************************************************
+
+Files with unapproved licenses:
+
+  /Users/tianyu/incubator-iotdb/calcite/pom.xml
+  /Users/tianyu/incubator-iotdb/calcite/src/test/java/IoTDBTest.java
+  /Users/tianyu/incubator-iotdb/calcite/src/main/resources/connection.properties
+  /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/CalciteDemo.java
+  /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBSchema.java
+  /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBCalciteDemo.java
+  /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBTable.java
+  /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBSchemaFactory.java
+  /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBScannableTable.java
+
+*****************************************************
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+ !????? /Users/tianyu/incubator-iotdb/calcite/pom.xml
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/test/java/IoTDBTest.java
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/resources/connection.properties
+  B     /Users/tianyu/incubator-iotdb/calcite/src/main/resources/test.tsfile
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/CalciteDemo.java
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBSchema.java
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBCalciteDemo.java
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBTable.java
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBSchemaFactory.java
+ !????? /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBScannableTable.java
+ 
+*****************************************************
+
+ Printing headers for text files without a valid license header...
+ 
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/pom.xml
+=====================================================
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>root</artifactId>
+        <groupId>org.apache.iotdb</groupId>
+        <version>0.8.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>iotdb-calcite</artifactId>
+    <description>Integration IoTDB into Apache Calcite.</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.iotdb</groupId>
+            <artifactId>iotdb</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-core</artifactId>
+            <version>1.18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.iotdb</groupId>
+            <artifactId>iotdb-jdbc</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/test/java/IoTDBTest.java
+=====================================================
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import org.apache.calcite.jdbc.CalciteConnection;
+import org.apache.calcite.schema.Schema;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Table;
+import org.apache.iotdb.calcite.IoTDBSchema;
+import org.apache.iotdb.calcite.IoTDBSchemaFactory;
+import org.junit.Test;
+
+public class IoTDBTest {
+
+  private Map<String, Object> getOpMap() throws Exception {
+    Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
+    InputStream inputStream = new FileInputStream(
+        "/Users/tianyu/incubator-iotdb/calcite/src/main/resources/connection.properties");
+    Properties properties = new Properties();
+    properties.load(inputStream);
+    String user = properties.getProperty("user", "root");
+    String pass = properties.getProperty("pass", "root");
+    String IP = properties.getProperty("IP");
+    String Port = properties.getProperty("Port");
+    Map<String, Object> operandMap = new HashMap<>();
+    operandMap.put("username", user);
+    operandMap.put("password", pass);
+    operandMap.put("host", IP);
+    operandMap.put("port", Port);
+    return operandMap;
+  }
+
+  private SchemaPlus getRootSchema() throws Exception {
+    Class.forName("org.apache.calcite.jdbc.Driver");
+    Properties info = new Properties();
+    info.setProperty("lex", "JAVA");
+    Connection connection = DriverManager.getConnection("jdbc:calcite:", info);
+    CalciteConnection calciteConnection =
+        connection.unwrap(CalciteConnection.class);
+    SchemaPlus rootSchema = calciteConnection.getRootSchema();
+    return rootSchema;
+  }
+
+  @Test
+  public void ConnectionTest() throws Exception {
+    IoTDBSchema ioTDBSchema = (IoTDBSchema) IoTDBSchemaFactory.INSTANCE
+        .create(getRootSchema(), "hr", getOpMap());
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/resources/connection.properties
+=====================================================
+IP=192.168.130.7
+Port=6667
+user=root
+pass=root
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/CalciteDemo.java
+=====================================================
+package org.apache.iotdb.calcite;
+
+import org.apache.calcite.DataContext;
+import org.apache.calcite.jdbc.CalciteConnection;
+import org.apache.calcite.linq4j.AbstractEnumerable;
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.linq4j.Enumerator;
+import org.apache.calcite.linq4j.Linq4j;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.schema.ScannableTable;
+import org.apache.calcite.schema.Schema;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Table;
+import org.apache.calcite.schema.impl.AbstractSchema;
+import org.apache.calcite.schema.impl.AbstractTable;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.iotdb.tsfile.file.metadata.TsFileMetaData;
+import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
+import org.apache.iotdb.tsfile.read.ReadOnlyTsFile;
+import org.apache.iotdb.tsfile.read.TsFileSequenceReader;
+import org.apache.iotdb.tsfile.read.common.Field;
+import org.apache.iotdb.tsfile.read.common.Path;
+import org.apache.iotdb.tsfile.read.common.RowRecord;
+import org.apache.iotdb.tsfile.read.expression.QueryExpression;
+import org.apache.iotdb.tsfile.read.query.dataset.QueryDataSet;
+import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+public class CalciteDemo {
+
+  /**
+   * Very simple example how to read a tsfile over calcite jdbc.
+   */
+  public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
+    // file path
+    String path = "calcite/src/main/resources/test.tsfile";
+
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBSchema.java
+=====================================================
+package org.apache.iotdb.calcite;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.calcite.schema.Table;
+import org.apache.calcite.schema.impl.AbstractSchema;
+
+public class IoTDBSchema extends AbstractSchema {
+
+  private final String host;
+  private final int port;
+  private final String userName;
+  private final String password;
+  final Connection connection;
+  private Map<String, Table> tableMap;
+  private final IoTDBTable.Flavor flavor = IoTDBTable.Flavor.SCANNABLE;
+
+  public IoTDBSchema(String host, int port, String userName, String password)
+      throws ClassNotFoundException, SQLException {
+    super();
+    this.host = host;
+    this.port = port;
+    this.userName = userName;
+    this.password = password;
+
+    Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
+    String urlFormat = "jdbc:iotdb://%s:%s/";
+    String url = String.format(urlFormat, host, port);
+    connection = DriverManager.getConnection(url, userName, password);
+    System.out.println("Connect IoTDB successfully");
+  }
+
+  @Override
+  protected Map<String, Table> getTableMap() {
+    if (tableMap == null) {
+      tableMap = createTableMap();
+    }
+    return tableMap;
+  }
+
+  public Map<String, Table> createTableMap() {
+    Map<String, Table> tableMap = new HashMap<>();
+    try {
+      Statement statement = connection.createStatement();
+      boolean hasResultSet = statement.execute("show storage group");
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBCalciteDemo.java
+=====================================================
+package org.apache.iotdb.calcite;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import org.apache.calcite.adapter.jdbc.JdbcSchema;
+import org.apache.calcite.jdbc.CalciteConnection;
+import org.apache.calcite.schema.Schema;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.commons.dbcp2.BasicDataSource;
+
+public class IoTDBCalciteDemo {
+
+  public static SchemaPlus getRootSchema() throws ClassNotFoundException, SQLException {
+    Class.forName("org.apache.calcite.jdbc.Driver");
+
+    Properties info = new Properties();
+    info.setProperty("lex", "JAVA");
+//    info.setProperty("remarks","true");
+//    info.setProperty("parserFactory","org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl#FACTORY");
+    Connection connection = DriverManager.getConnection("jdbc:calcite:", info);
+    CalciteConnection calciteConnection = connection.unwrap(CalciteConnection.class);
+    System.out.println(calciteConnection.getProperties());
+    SchemaPlus rootSchema = calciteConnection.getRootSchema();
+
+    return rootSchema;
+  }
+
+  public static void IoTDBConnectionTest(String path)
+      throws ClassNotFoundException, IOException, SQLException {
+    System.out.println("reading config from path: " + path);
+    Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
+    InputStream inputStream = new FileInputStream(path);
+    Properties properties = new Properties();
+    properties.load(inputStream);
+    String user = properties.getProperty("user", "root");
+    String pass = properties.getProperty("pass", "root");
+    String IP = properties.getProperty("IP");
+    String Port = properties.getProperty("Port");
+    String urlFormat = "jdbc:iotdb://%s:%s/";
+    System.out.println("connect " + String.format(urlFormat, IP, Port));
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBTable.java
+=====================================================
+package org.apache.iotdb.calcite;
+
+import org.apache.calcite.DataContext;
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.schema.ScannableTable;
+import org.apache.calcite.schema.impl.AbstractTable;
+
+public class IoTDBTable extends AbstractTable implements ScannableTable {
+
+  public IoTDBTable(String storageGroup) {
+
+  }
+
+  @Override
+  public RelDataType getRowType(RelDataTypeFactory typeFactory) {
+    return null;
+  }
+
+  @Override
+  public Enumerable<Object[]> scan(DataContext root) {
+    return null;
+  }
+
+  /**
+   * Various degrees of table "intelligence".
+   */
+  public enum Flavor {
+    SCANNABLE
+  }
+}
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBSchemaFactory.java
+=====================================================
+package org.apache.iotdb.calcite;
+
+import java.sql.SQLException;
+import java.util.Map;
+import org.apache.calcite.schema.Schema;
+import org.apache.calcite.schema.SchemaFactory;
+import org.apache.calcite.schema.SchemaPlus;
+
+public class IoTDBSchemaFactory implements SchemaFactory {
+
+  /**
+   * Public singleton, per factory contract.
+   */
+  public static final IoTDBSchemaFactory INSTANCE = new IoTDBSchemaFactory();
+
+  private IoTDBSchemaFactory() {
+
+  }
+
+  @Override
+  public Schema create(SchemaPlus parentSchema, String name, Map<String, Object> operand) {
+    final String host = (String) operand.get("host");
+    final String userName = (String) operand.get("username");
+    final String password = (String) operand.get("password");
+    int port = 6667;
+    if (operand.containsKey("port")) {
+      Object portObj = operand.get("port");
+      if (portObj instanceof String) {
+        port = Integer.parseInt((String) portObj);
+      } else {
+        port = (int) portObj;
+      }
+    }
+    try {
+      return new IoTDBSchema(host, port, userName, password);
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+}
+
+=====================================================
+== File: /Users/tianyu/incubator-iotdb/calcite/src/main/java/org/apache/iotdb/calcite/IoTDBScannableTable.java
+=====================================================
+package org.apache.iotdb.calcite;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.calcite.DataContext;
+import org.apache.calcite.linq4j.AbstractEnumerable;
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.linq4j.Enumerator;
+import org.apache.calcite.schema.ScannableTable;
+
+public class IoTDBScannableTable extends IoTDBTable implements ScannableTable {
+
+  public IoTDBScannableTable(String storageGroup) {
+    super(storageGroup);
+  }
+
+  public String toString() {
+    return "IoTDBScannableTable";
+  }
+
+  @Override
+  public Enumerable<Object[]> scan(DataContext root) {
+    return null;
+  }
+}

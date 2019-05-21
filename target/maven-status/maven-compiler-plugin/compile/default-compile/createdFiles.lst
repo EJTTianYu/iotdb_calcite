@@ -1,0 +1,13 @@
+org/apache/iotdb/calcite/CalciteDemo.class
+org/apache/iotdb/calcite/CalciteDemo$2.class
+org/apache/iotdb/calcite/CalciteDemo$QueryExpressionEnumerable.class
+org/apache/iotdb/calcite/CalciteDemo$1.class
+org/apache/iotdb/calcite/IoTDBScannableTable.class
+org/apache/iotdb/calcite/IoTDBTable.class
+org/apache/iotdb/calcite/IoTDBSchema$1.class
+org/apache/iotdb/calcite/CalciteDemo$DeviceTable.class
+org/apache/iotdb/calcite/CalciteDemo$QueryExpressionEnumerable$1.class
+org/apache/iotdb/calcite/IoTDBSchemaFactory.class
+org/apache/iotdb/calcite/IoTDBSchema.class
+org/apache/iotdb/calcite/IoTDBCalciteDemo.class
+org/apache/iotdb/calcite/IoTDBTable$Flavor.class
