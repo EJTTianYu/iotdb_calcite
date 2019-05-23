@@ -3,6 +3,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class IoTDBTest {
     operandMap.put("password", pass);
     operandMap.put("host", IP);
     operandMap.put("port", Port);
-    operandMap.put("flavor", Flavor.SCANNABLE);
+    operandMap.put("flavor", Flavor.PROFIL);
     return operandMap;
   }
 
@@ -69,14 +70,16 @@ public class IoTDBTest {
     CalciteConnection calciteConnection =
         connection.unwrap(CalciteConnection.class);
     SchemaPlus rootSchema = calciteConnection.getRootSchema();
+    Map<String, Object> opMap = getOpMap();
     Schema ioTDBSchema = IoTDBSchemaFactory.INSTANCE
-        .create(getRootSchema(), "hr", getOpMap());
+        .create(getRootSchema(), "hr", opMap);
     rootSchema.add("hr", ioTDBSchema);
 
     Statement statement = connection.createStatement();
-    boolean hasResult = statement
+    boolean hasResult = false;
+    hasResult = statement
         .execute(
-            "select `d1.s1`,`wf03.wt01.status` from hr.`root.calcite`,hr.`root.sgcc` where `d1.s1`>1 and `wf03.wt01.status`=true ");
+            "select AVG(`time`),AVG(`d1.s1`) from hr.`root.calcite`");
     if (hasResult) {
       ResultSet resultSet = statement.getResultSet();
       IoTDBCalciteDemo.outputResult(resultSet);

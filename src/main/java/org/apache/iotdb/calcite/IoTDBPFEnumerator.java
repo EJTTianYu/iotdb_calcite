@@ -15,7 +15,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.time.FastDateFormat;
 
-public class IoTDBEnumerator<E> implements Enumerator<E> {
+public class IoTDBPFEnumerator<E> implements Enumerator<E> {
 
   private static final FastDateFormat TIME_FORMAT_DATE;
   private static final FastDateFormat TIME_FORMAT_TIME;
@@ -35,19 +35,25 @@ public class IoTDBEnumerator<E> implements Enumerator<E> {
   private Connection IoTDBConn;
   private final String storageGroupName;
   private ResultSet resultSet;
+  private final String projectString;
+  private final String filterString;
   private E current;
 
-  IoTDBEnumerator(String storageGroup, AtomicBoolean cancelFlag, boolean stream,
+  IoTDBPFEnumerator(String storageGroup, String projectString, String filterString,
+      AtomicBoolean cancelFlag, boolean stream,
       String[] filterValues, RowConverter<E> rowConverter) {
     this.cancelFlag = cancelFlag;
     this.rowConverter = rowConverter;
     this.filterValues = filterValues;
     this.storageGroupName = storageGroup;
+    this.projectString = projectString;
+    this.filterString = filterString;
+
     IoTDBConn = IoTDBSchema.getIoTDBConn();
     try {
       boolean hasResult = false;
       Statement statement = IoTDBConn.createStatement();
-      String SqlTmp = "select * from %s";
+      String SqlTmp = "select " + projectString + " from %s " + filterString;
       String sql = String.format(SqlTmp, storageGroupName);
       try {
         hasResult = statement.execute(sql);
@@ -65,67 +71,46 @@ public class IoTDBEnumerator<E> implements Enumerator<E> {
   /**
    * Returns an array of integers {0, ..., n - 1}.
    */
-  static int[] identityList(int n) {
-    int[] integers = new int[n];
-    for (int i = 0; i < n; i++) {
-      integers[i] = i;
+  static int[] identityList(int[] projects) {
+    int num = projects.length;
+    ArrayList<Integer> resultList = new ArrayList<>();
+    int i = 1;
+    for (int pro : projects) {
+      if (pro != 0) {
+        resultList.add(i);
+        i++;
+      } else {
+        resultList.add(pro);
+      }
     }
-    return integers;
-  }
-
-  /**
-   * Deduces the names and types of a table's columns by reading the first line of a CSV file.
-   */
-  static RelDataType deduceRowType(JavaTypeFactory typeFactory, String storageGroupName,
-      List<IoTDBFieldType> fieldTypes, List<String> fieldNames) {
-    final List<RelDataType> types = new ArrayList<>();
-    final List<String> names = new ArrayList<>();
-    Connection IoTDBconn = IoTDBSchema.getIoTDBConn();
-    ResultSet resultSet = null;
-    try {
-      Statement statement = IoTDBconn.createStatement();
-      String SqlTmp = "show timeseries %s";
-      String Sql = String.format(SqlTmp, storageGroupName);
-      boolean hasResult = statement.execute(Sql);
-      if (hasResult) {
-        resultSet = statement.getResultSet();
-      }
-      names.add("time");
-      types.add(IoTDBFieldType.TIMESTAMP.toType(typeFactory));
-      if (fieldTypes != null) {
-        fieldTypes.add(IoTDBFieldType.TIMESTAMP);
-      }
-      if (fieldNames != null) {
-        fieldNames.add("time");
-      }
-      while (resultSet.next()) {
-        String name;
-        final IoTDBFieldType ioTDBFieldType;
-        name = resultSet.getString(1);
-        String typeString = resultSet.getString(3);
-        ioTDBFieldType = IoTDBFieldType.of(typeString);
-        if (ioTDBFieldType == null) {
-          System.out.println("WARNING: Found unknown type: "
-              + typeString + " in : " + storageGroupName
-              + " for column: " + name
-              + ". Will assume the type of column is string");
-        }
-        final RelDataType type = ioTDBFieldType.toType(typeFactory);
-        name = name.replace(storageGroupName.concat("."), "");
-        names.add(name);
-        types.add(type);
-        if (fieldTypes != null) {
-          fieldTypes.add(ioTDBFieldType);
-        }
-        if (fieldNames != null) {
-          fieldNames.add(name);
-        }
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
+    int[] results = new int[resultList.size()];
+    for (int j = 0; j < num; j++) {
+      results[j] = resultList.get(j);
     }
-    return typeFactory.createStructType(Pair.zip(names, types));
+    return results;
   }
+//  static int[] identityList(int[] projects) {
+//    boolean hasTimeCol = false;
+//    for (int colNum : projects) {
+//      if (colNum == 0) {
+//        hasTimeCol = true;
+//      }
+//    }
+//    int n = projects.length;
+//    if (hasTimeCol) {
+//      int[] integers = new int[n];
+//      for (int i = 0; i < n; i++) {
+//        integers[i] = i;
+//      }
+//      return integers;
+//    } else {
+//      int[] integers = new int[n];
+//      for (int i = 0; i < n ; i++) {
+//        integers[i] = i + 1;
+//      }
+//      return integers;
+//    }
+//  }
 
   /**
    * Row converter.
@@ -212,7 +197,7 @@ public class IoTDBEnumerator<E> implements Enumerator<E> {
       final Object[] objects = new Object[fields.length];
       for (int i = 0; i < fields.length; i++) {
         int field = fields[i];
-        objects[i] = convert(fieldTypes[field], strings[field]);
+        objects[i] = convert(fieldTypes[i], strings[field]);
       }
       return objects;
     }

@@ -49,7 +49,7 @@ public class IoTDBCalciteDemo {
     Statement statement = connection.createStatement();
     DatabaseMetaData databaseMetaData = connection.getMetaData();
 //    ResultSet resultSet=databaseMetaData.getTables(null,null,"%",new String[]{"%"});
-    boolean hasResultSet = statement.execute("select * from root.calcite");
+    boolean hasResultSet = statement.execute("select * from root.sgcc.wf03.wt01");
 //    boolean hasResultSet = statement.execute("show timeseries root.android");
     if (hasResultSet) {
       ResultSet resultSet = statement.getResultSet();
