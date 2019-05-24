@@ -26,7 +26,7 @@ public class IoTDBTest {
   private Map<String, Object> getOpMap() throws Exception {
     Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
     InputStream inputStream = new FileInputStream(
-        "/Users/tianyu/incubator-iotdb/calcite/src/main/resources/connection.properties");
+        "/Users/tianyu/JavaProject/calcite-iotdb/src/main/resources/connection.properties");
     Properties properties = new Properties();
     properties.load(inputStream);
     String user = properties.getProperty("user", "root");
@@ -34,11 +34,11 @@ public class IoTDBTest {
     String IP = properties.getProperty("IP");
     String Port = properties.getProperty("Port");
     Map<String, Object> operandMap = new HashMap<>();
-    operandMap.put("username", user);
+    operandMap.put("userName", user);
     operandMap.put("password", pass);
     operandMap.put("host", IP);
     operandMap.put("port", Port);
-    operandMap.put("flavor", Flavor.PROFIL);
+    operandMap.put("flavor", "profil");
     return operandMap;
   }
 
@@ -79,7 +79,7 @@ public class IoTDBTest {
     boolean hasResult = false;
     hasResult = statement
         .execute(
-            "select AVG(`time`),AVG(`d1.s1`) from hr.`root.calcite`");
+            "select count(`d1.s1`) from hr.`root.calcite` group by `time`");
     if (hasResult) {
       ResultSet resultSet = statement.getResultSet();
       IoTDBCalciteDemo.outputResult(resultSet);

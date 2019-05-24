@@ -36,8 +36,10 @@ public class IoTDBProjectFilterTable extends IoTDBTable implements ProjectableFi
     String projectString = processProject(projects);
 //    System.out.println(filterString);
 //    System.out.println(projectString);
-    int[] fields = IoTDBPFEnumerator.identityList(projects);
-    List<IoTDBFieldType> fieldTypesAft = processFieldTypes(fieldTypes, projects);
+    int[] fields = projects != null ? IoTDBPFEnumerator.identityList(projects)
+        : IoTDBEnumerator.identityList(fieldTypes.size());
+    List<IoTDBFieldType> fieldTypesAft =
+        projects != null ? processFieldTypes(fieldTypes, projects) : fieldTypes;
 
     final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
     return new AbstractEnumerable<Object[]>() {
@@ -50,7 +52,7 @@ public class IoTDBProjectFilterTable extends IoTDBTable implements ProjectableFi
   }
 
   private String processFilters(List<RexNode> filters) {
-    if (filters.size()!=0) {
+    if (filters.size() != 0) {
       StringBuilder filterString = new StringBuilder("where ");
       for (RexNode filterNode : filters) {
         RexCall filterCall = (RexCall) filterNode;
@@ -66,8 +68,9 @@ public class IoTDBProjectFilterTable extends IoTDBTable implements ProjectableFi
       }
 //    System.out.println(filterString);
       return filterString.toString();
+    } else {
+      return "";
     }
-    else return "";
   }
 
   private String processTree(RexCall filter) {
@@ -91,13 +94,21 @@ public class IoTDBProjectFilterTable extends IoTDBTable implements ProjectableFi
   }
 
   private String processProject(int[] projects) {
-    StringBuilder projectString = new StringBuilder();
-    for (int i : projects) {
-      if (i != 0) {
-        projectString.append(this.fieldNames.get(i) + ',');
+    if (projects != null) {
+      StringBuilder projectString = new StringBuilder();
+      for (int i : projects) {
+        if (i != 0) {
+          projectString.append(this.fieldNames.get(i) + ',');
+        }
       }
+      if (projectString.length() == 0) {
+        return "*";
+      } else {
+        return projectString.toString().substring(0, projectString.length() - 1);
+      }
+    } else {
+      return "*";
     }
-    return projectString.toString().substring(0, projectString.length() - 1);
   }
 
   private List<IoTDBFieldType> processFieldTypes(List<IoTDBFieldType> fieldTypeList,

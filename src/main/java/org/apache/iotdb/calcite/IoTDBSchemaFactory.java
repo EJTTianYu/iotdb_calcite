@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.calcite.schema.Schema;
 import org.apache.calcite.schema.SchemaFactory;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.iotdb.calcite.IoTDBTable.Flavor;
 
 public class IoTDBSchemaFactory implements SchemaFactory {
 
@@ -13,16 +14,23 @@ public class IoTDBSchemaFactory implements SchemaFactory {
    */
   public static final IoTDBSchemaFactory INSTANCE = new IoTDBSchemaFactory();
 
-  private IoTDBSchemaFactory() {
+  public IoTDBSchemaFactory() {
 
   }
 
   @Override
   public Schema create(SchemaPlus parentSchema, String name, Map<String, Object> operand) {
     final String host = (String) operand.get("host");
-    final String userName = (String) operand.get("username");
+    final String userName = (String) operand.get("userName");
     final String password = (String) operand.get("password");
-    final IoTDBTable.Flavor flavor = (IoTDBTable.Flavor) operand.get("flavor");
+    final String flavorString = (String) operand.get("flavor");
+    IoTDBTable.Flavor flavor = null;
+    if (flavorString.equals("scan")) {
+      flavor = Flavor.SCANNABLE;
+    } else {
+      flavor = Flavor.PROFIL;
+    }
+
     int port = 6667;
     if (operand.containsKey("port")) {
       Object portObj = operand.get("port");
